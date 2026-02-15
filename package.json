@@ -1,0 +1,36 @@
+{
+  "name": "swsh-discord",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thetataudg/swsh-discord.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thetataudg/swsh-discord/issues"
+  },
+  "homepage": "https://github.com/thetataudg/swsh-discord#readme",
+  "description": "",
+  "dependencies": {
+    "@somewhere-somehow/swsh-public-api": "^0.0.9",
+    "discord.js": "^14.25.1",
+    "dotenv": "^17.3.1",
+    "form-data": "^4.0.5",
+    "qs": "^6.14.2",
+    "url-join": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
