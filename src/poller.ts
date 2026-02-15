@@ -36,37 +36,63 @@ export async function pollAlbums(discord: Client) {
 
     if (!photosResponse.data || photosResponse.data.length === 0) continue;
 
-    const newest = photosResponse.data[0];
-    if (!newest) continue;
+    // Find all new photos in this album (from newest to oldest until we hit a known photo)
+    const newPhotos = [];
+    const lastKnownPhotoId = state[album.albumId];
+    
+    for (const photo of photosResponse.data) {
+      if (photo.photoId === lastKnownPhotoId) {
+        // We've reached the last photo we posted, stop here
+        break;
+      }
+      newPhotos.push(photo);
+    }
 
-    if (state[album.albumId] !== newest.photoId) {
-      console.log(`[Poller] New photo detected in album "${album.name || "Unnamed"}"`);
-      console.log(`[Poller] - Photo ID: ${newest.photoId}`);
+    if (newPhotos.length === 0) continue;
+
+    console.log(`[Poller] Found ${newPhotos.length} new photo(s) in album "${album.name || "Unnamed"}"`);
+
+    // Post photos in reverse order (oldest to newest)
+    for (let i = newPhotos.length - 1; i >= 0; i--) {
+      const photo = newPhotos[i];
+      if (!photo) continue;
+
+      console.log(`[Poller] - Posting photo ${newPhotos.length - i}/${newPhotos.length}`);
+      console.log(`[Poller] - Photo ID: ${photo.photoId}`);
       console.log(`[Poller] - Album ID: ${album.albumId}`);
       console.log(`[Poller] - Album Owner ID: ${album.ownerId || "Unknown"}`);
-      
-      state[album.albumId] = newest.photoId;
-
-      const embedFields = [
-        { name: "Album", value: album.name || "Unnamed Album", inline: true }
-      ];
-      
-      if (album.ownerId) {
-        embedFields.push({ name: "Album Owner ID", value: album.ownerId, inline: true });
-      }
 
       const embed = new EmbedBuilder()
-        .setTitle("📸 New Photo Uploaded")
-        .addFields(embedFields)
-        .setImage(newest.originalUrl)
+        .setTitle("📸 New Photo Uploaded to SWSH")
+        .addFields([
+          { name: "Album", value: album.name || "Unnamed Album", inline: true }
+        ])
+        .setImage(photo.stableUrl)
         .setTimestamp(new Date());
 
-      console.log(`[Poller] Posting photo to Discord channel...`);
-      await channel.send({ embeds: [embed] });
-      console.log(`[Poller] Successfully posted photo!`);
-
-      saveState(state);
+      try {
+        console.log(`[Poller] Posting to Discord channel...`);
+        await channel.send({ embeds: [embed] });
+        console.log(`[Poller] Successfully posted!`);
+        
+        // Update state after each successful post
+        state[album.albumId] = photo.photoId;
+        saveState(state);
+        
+        // Add delay between posts to avoid rate limiting (1.5 seconds)
+        if (i > 0) {
+          console.log(`[Poller] Waiting 1.5s before next post...`);
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+      } catch (error) {
+        console.error(`[Poller] Error posting photo:`, error);
+        // If we hit an error (like rate limit), save progress and stop
+        break;
+      }
     }
+
+    // Small delay between albums
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
   
   console.log(`[Poller] Poll complete.`);
