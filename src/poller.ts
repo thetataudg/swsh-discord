@@ -1,8 +1,8 @@
-import { SwshApiClient } from "@somewhere-somehow/swsh-public-api";
+import * as SwshApi from "@somewhere-somehow/swsh-public-api";
 import { Client, TextChannel, EmbedBuilder } from "discord.js";
 import { loadState, saveState } from "./state.js";
 
-let swsh: SwshApiClient;
+let swsh: SwshApi.SwshApiClient;
 
 function getSwshClient() {
   if (!swsh) {
@@ -10,7 +10,7 @@ function getSwshClient() {
       throw new Error("SWSH_API_KEY environment variable is not set");
     }
     console.log(`[Init] SWSH API Key loaded: ${process.env.SWSH_API_KEY.substring(0, 8)}...`);
-    swsh = new SwshApiClient({
+    swsh = new SwshApi.SwshApiClient({
       apiKey: process.env.SWSH_API_KEY
     });
   }
