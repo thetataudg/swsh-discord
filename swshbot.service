@@ -1,0 +1,20 @@
+[Unit]
+Description=SWSH Discord Bot
+After=network.target
+
+[Service]
+Type=simple
+User=swshbot
+WorkingDirectory=/opt/swsh-bot
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=swsh-discord
+
+# Environment variables
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

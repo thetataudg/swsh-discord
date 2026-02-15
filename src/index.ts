@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { Client, GatewayIntentBits } from "discord.js";
-import { pollAlbums } from "./poller.js";
+import { pollAlbums } from "./poller";
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]

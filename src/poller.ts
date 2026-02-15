@@ -1,6 +1,6 @@
 import * as SwshApi from "@somewhere-somehow/swsh-public-api";
 import { Client, TextChannel, EmbedBuilder } from "discord.js";
-import { loadState, saveState } from "./state.js";
+import { loadState, saveState } from "./state";
 
 let swsh: SwshApi.SwshApiClient;
 
