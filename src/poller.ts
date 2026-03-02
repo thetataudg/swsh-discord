@@ -1,5 +1,5 @@
 import * as SwshApi from "@somewhere-somehow/swsh-public-api";
-import { Client, TextChannel, EmbedBuilder, AttachmentBuilder } from "discord.js";
+import { Client, TextChannel, AttachmentBuilder } from "discord.js";
 import { loadState, saveState } from "./state";
 
 let swsh: SwshApi.SwshApiClient;
@@ -77,19 +77,13 @@ export async function pollAlbums(discord: Client) {
         const extension = urlPath.split('.').pop() || 'jpg';
         const filename = `photo-${photo.photoId}.${extension}`;
         
+        console.log(`[Poller] Creating attachment: ${filename} (${imageBuffer.length} bytes)`);
+        
         // Create attachment
         const attachment = new AttachmentBuilder(imageBuffer, { name: filename });
-        
-        const embed = new EmbedBuilder()
-          .setTitle("📸 New Photo Uploaded to SWSH")
-          .addFields([
-            { name: "Album", value: album.name || "Unnamed Album", inline: true }
-          ])
-          .setImage(`attachment://${filename}`)
-          .setTimestamp(new Date());
 
         console.log(`[Poller] Posting to Discord channel...`);
-        await channel.send({ embeds: [embed], files: [attachment] });
+        await channel.send({ files: [attachment] });
         console.log(`[Poller] Successfully posted!`);
         
         // Update state after each successful post
