@@ -72,12 +72,22 @@ export async function pollAlbums(discord: Client) {
         }
         const imageBuffer = Buffer.from(await response.arrayBuffer());
         
-        // Extract file extension from URL or default to jpg
-        const urlPath = new URL(photo.stableUrl).pathname;
-        const extension = urlPath.split('.').pop() || 'jpg';
+        // Determine file extension from Content-Type header
+        const contentType = response.headers.get('content-type') || '';
+        let extension = 'jpg'; // default
+        if (contentType.includes('image/png')) {
+          extension = 'png';
+        } else if (contentType.includes('image/jpeg') || contentType.includes('image/jpg')) {
+          extension = 'jpg';
+        } else if (contentType.includes('image/gif')) {
+          extension = 'gif';
+        } else if (contentType.includes('image/webp')) {
+          extension = 'webp';
+        }
+        
         const filename = `photo-${photo.photoId}.${extension}`;
         
-        console.log(`[Poller] Creating attachment: ${filename} (${imageBuffer.length} bytes)`);
+        console.log(`[Poller] Creating attachment: ${filename} (${imageBuffer.length} bytes, type: ${contentType})`);
         
         // Create attachment
         const attachment = new AttachmentBuilder(imageBuffer, { name: filename });
