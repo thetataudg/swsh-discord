@@ -1,5 +1,5 @@
 import * as SwshApi from "@somewhere-somehow/swsh-public-api";
-import { Client, TextChannel, EmbedBuilder } from "discord.js";
+import { Client, TextChannel, EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { loadState, saveState } from "./state";
 
 let swsh: SwshApi.SwshApiClient;
@@ -62,17 +62,34 @@ export async function pollAlbums(discord: Client) {
       console.log(`[Poller] - Album ID: ${album.albumId}`);
       console.log(`[Poller] - Album Owner ID: ${album.ownerId || "Unknown"}`);
 
-      const embed = new EmbedBuilder()
-        .setTitle("📸 New Photo Uploaded to SWSH")
-        .addFields([
-          { name: "Album", value: album.name || "Unnamed Album", inline: true }
-        ])
-        .setImage(photo.stableUrl)
-        .setTimestamp(new Date());
-
       try {
+        console.log(`[Poller] Downloading image from ${photo.stableUrl}...`);
+        
+        // Download the image
+        const response = await fetch(photo.stableUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to download image: ${response.statusText}`);
+        }
+        const imageBuffer = Buffer.from(await response.arrayBuffer());
+        
+        // Extract file extension from URL or default to jpg
+        const urlPath = new URL(photo.stableUrl).pathname;
+        const extension = urlPath.split('.').pop() || 'jpg';
+        const filename = `photo-${photo.photoId}.${extension}`;
+        
+        // Create attachment
+        const attachment = new AttachmentBuilder(imageBuffer, { name: filename });
+        
+        const embed = new EmbedBuilder()
+          .setTitle("📸 New Photo Uploaded to SWSH")
+          .addFields([
+            { name: "Album", value: album.name || "Unnamed Album", inline: true }
+          ])
+          .setImage(`attachment://${filename}`)
+          .setTimestamp(new Date());
+
         console.log(`[Poller] Posting to Discord channel...`);
-        await channel.send({ embeds: [embed] });
+        await channel.send({ embeds: [embed], files: [attachment] });
         console.log(`[Poller] Successfully posted!`);
         
         // Update state after each successful post
